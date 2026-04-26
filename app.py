@@ -1,7 +1,6 @@
 import os
 import json
 import uuid
-import base64
 from datetime import datetime
 from flask import (
     Flask, render_template, request,
@@ -18,11 +17,11 @@ from qr_generator import make_qr
 app = Flask(__name__)
 app.secret_key = 'qrcert-secret-2026'
 
-BASE_DIR    = os.path.dirname(__file__)
-QR_DIR      = os.path.join(BASE_DIR, 'static', 'qrcodes')
-CERT_DIR    = os.path.join(BASE_DIR, 'static', 'certs')
-UPLOAD_DIR  = os.path.join(BASE_DIR, 'static', 'uploads')
-DB_FILE     = os.path.join(BASE_DIR, 'certificates.json')
+BASE_DIR      = os.path.dirname(__file__)
+QR_DIR        = os.path.join(BASE_DIR, 'static', 'qrcodes')
+CERT_DIR      = os.path.join(BASE_DIR, 'static', 'certs')
+UPLOAD_DIR    = os.path.join(BASE_DIR, 'static', 'uploads')
+DB_FILE       = os.path.join(BASE_DIR, 'certificates.json')
 SETTINGS_FILE = os.path.join(BASE_DIR, 'settings.json')
 
 for d in [QR_DIR, CERT_DIR, UPLOAD_DIR]:
@@ -73,7 +72,7 @@ def build_certificate_image(cert_data, qr_img, cert_id,
     img  = Image.new('RGB', (W, H), '#FFFEF9')
     draw = ImageDraw.Draw(img)
 
-    # ── Outer gold border ──
+    # ── Outer borders ──
     for i in range(8):
         draw.rectangle([i, i, W-1-i, H-1-i],
                        outline='#C8A415' if i % 2 == 0 else '#1a3a6b')
@@ -84,17 +83,7 @@ def build_certificate_image(cert_data, qr_img, cert_id,
     draw.rectangle([0, 0, W, 180], fill='#1a3a6b')
     draw.rectangle([0, 177, W, 183], fill='#C8A415')
 
-    # ── School logo (top left) ──
-    logo_path = settings.get('logo')
-    if logo_path and os.path.exists(logo_path):
-        try:
-            logo = Image.open(logo_path).convert('RGBA')
-            logo.thumbnail((140, 140), Image.LANCZOS)
-            img.paste(logo, (30, 20), logo)
-        except Exception:
-            pass
-
-    # ── Institution name (header) ──
+    # ── Fonts ──
     try:
         font_big   = ImageFont.load_default(size=38)
         font_med   = ImageFont.load_default(size=24)
@@ -107,32 +96,38 @@ def build_certificate_image(cert_data, qr_img, cert_id,
         font_big = font_med = font_small = font_body = \
         font_name = font_cert = font_tiny = ImageFont.load_default()
 
+    # ── School logo (top left) ──
+    logo_path = settings.get('logo')
+    if logo_path and os.path.exists(logo_path):
+        try:
+            logo = Image.open(logo_path).convert('RGBA')
+            logo.thumbnail((140, 140), Image.LANCZOS)
+            img.paste(logo, (30, 20), logo)
+        except Exception:
+            pass
+
+    # ── Institution name ──
     draw.text((W//2, 55),  'FEDERAL POLYTECHNIC OFFA',
               fill='white', anchor='mm', font=font_big)
     draw.text((W//2, 100), 'KWARA STATE, NIGERIA',
               fill='#C8A415', anchor='mm', font=font_med)
     draw.text((W//2, 138), 'Department of Software and Web Development',
-              fill='rgba(255,255,255,200)', anchor='mm', font=font_small)
+              fill='white', anchor='mm', font=font_small)
     draw.text((W//2, 165), 'OFFICE OF THE REGISTRAR',
               fill='#C8A415', anchor='mm', font=font_small)
 
     # ── Certificate title ──
     draw.text((W//2, 230), 'CERTIFICATE OF COMPLETION',
               fill='#1a3a6b', anchor='mm', font=font_big)
-
-    # Gold underline
     tw = 520
-    draw.rectangle([W//2 - tw//2, 250, W//2 + tw//2, 254],
-                   fill='#C8A415')
+    draw.rectangle([W//2 - tw//2, 250, W//2 + tw//2, 254], fill='#C8A415')
 
-    # ── Body text ──
-    draw.text((W//2, 300),
-              'This is to certify that',
+    # ── Body ──
+    draw.text((W//2, 300), 'This is to certify that',
               fill='#555555', anchor='mm', font=font_body)
 
     # Student name
-    draw.text((W//2, 370),
-              cert_data.get('name', '').upper(),
+    draw.text((W//2, 370), cert_data.get('name', '').upper(),
               fill='#1a3a6b', anchor='mm', font=font_name)
     draw.rectangle([200, 400, W-200, 403], fill='#C8A415')
 
@@ -141,32 +136,28 @@ def build_certificate_image(cert_data, qr_img, cert_id,
               ' is hereby awarded the',
               fill='#444444', anchor='mm', font=font_body)
 
-    draw.text((W//2, 490),
-              cert_data.get('qualification', ''),
+    draw.text((W//2, 490), cert_data.get('qualification', ''),
               fill='#1a3a6b', anchor='mm', font=font_cert)
 
-    draw.text((W//2, 535),
-              f"in  {cert_data.get('course', '')}",
+    draw.text((W//2, 535), f"in  {cert_data.get('course', '')}",
               fill='#333333', anchor='mm', font=font_body)
 
-    draw.text((W//2, 575),
-              f"with  {cert_data.get('grade', '')}",
+    draw.text((W//2, 580), f"with  {cert_data.get('grade', '')}",
               fill='#1a3a6b', anchor='mm', font=font_cert)
 
-    # Details row
-    draw.text((W//2, 630),
+    draw.text((W//2, 635),
               f"Matric No:  {cert_data.get('matric', '')}"
               f"          |          "
               f"Date Issued:  {cert_data.get('issue_date', '')}",
               fill='#666666', anchor='mm', font=font_body)
 
     # Gold divider
-    draw.rectangle([60, 660, W-60, 662], fill='#C8A415')
+    draw.rectangle([60, 668, W-60, 671], fill='#C8A415')
 
     # ── Student photo (top right) ──
-    photo_x, photo_y = W - 220, 200
-    draw.rectangle([photo_x - 5, photo_y - 5,
-                    photo_x + 165, photo_y + 205],
+    photo_x, photo_y = W - 230, 195
+    draw.rectangle([photo_x - 6, photo_y - 6,
+                    photo_x + 166, photo_y + 206],
                    outline='#C8A415', width=3)
     if student_photo_path and os.path.exists(student_photo_path):
         try:
@@ -174,21 +165,21 @@ def build_certificate_image(cert_data, qr_img, cert_id,
             photo = photo.resize((160, 200), Image.LANCZOS)
             img.paste(photo, (photo_x, photo_y))
         except Exception:
-            draw.rectangle([photo_x, photo_y, photo_x+160, photo_y+200],
-                           fill='#e0e0e0')
+            draw.rectangle([photo_x, photo_y,
+                            photo_x+160, photo_y+200], fill='#e0e0e0')
             draw.text((photo_x+80, photo_y+100), 'PHOTO',
                       fill='#aaa', anchor='mm', font=font_body)
     else:
-        draw.rectangle([photo_x, photo_y, photo_x+160, photo_y+200],
-                       fill='#f0f0f0')
+        draw.rectangle([photo_x, photo_y,
+                        photo_x+160, photo_y+200], fill='#f0f0f0')
         draw.text((photo_x+80, photo_y+100), 'NO PHOTO',
                   fill='#bbb', anchor='mm', font=font_small)
 
     # ── Signatures ──
-    sig_y     = 720
-    sig_line  = sig_y + 80
+    sig_y    = 730
+    sig_line = sig_y + 90
 
-    # Rector signature
+    # Rector
     rector_sig = settings.get('rector_sig')
     if rector_sig and os.path.exists(rector_sig):
         try:
@@ -198,12 +189,12 @@ def build_certificate_image(cert_data, qr_img, cert_id,
         except Exception:
             pass
     draw.line([(80, sig_line), (380, sig_line)], fill='#333', width=2)
-    draw.text((230, sig_line + 20), 'RECTOR',
+    draw.text((230, sig_line + 22), 'RECTOR',
               fill='#1a3a6b', anchor='mm', font=font_body)
-    draw.text((230, sig_line + 42), 'Federal Polytechnic Offa',
+    draw.text((230, sig_line + 45), 'Federal Polytechnic Offa',
               fill='#888', anchor='mm', font=font_tiny)
 
-    # Registrar signature
+    # Registrar
     reg_sig = settings.get('registrar_sig')
     if reg_sig and os.path.exists(reg_sig):
         try:
@@ -213,41 +204,47 @@ def build_certificate_image(cert_data, qr_img, cert_id,
         except Exception:
             pass
     draw.line([(540, sig_line), (840, sig_line)], fill='#333', width=2)
-    draw.text((690, sig_line + 20), 'REGISTRAR',
+    draw.text((690, sig_line + 22), 'REGISTRAR',
               fill='#1a3a6b', anchor='mm', font=font_body)
-    draw.text((690, sig_line + 42), 'Federal Polytechnic Offa',
+    draw.text((690, sig_line + 45), 'Federal Polytechnic Offa',
               fill='#888', anchor='mm', font=font_tiny)
 
-    # ── QR code (bottom right) ──
-    qr_size    = 180
+    # ── QR code — larger for easy scanning ──
+    qr_size    = 300
     qr_resized = qr_img.resize((qr_size, qr_size), Image.NEAREST)
     qr_x = W - qr_size - 80
-    qr_y = sig_y - 10
+    qr_y = sig_y - 20
+    draw.rectangle([qr_x - 10, qr_y - 10,
+                    qr_x + qr_size + 10, qr_y + qr_size + 10],
+                   outline='#C8A415', width=3)
     draw.rectangle([qr_x - 8, qr_y - 8,
                     qr_x + qr_size + 8, qr_y + qr_size + 8],
-                   outline='#C8A415', width=2)
+                   fill='white')
     img.paste(qr_resized, (qr_x, qr_y))
-    draw.text((qr_x + qr_size//2, qr_y + qr_size + 18),
+    draw.text((qr_x + qr_size//2, qr_y + qr_size + 22),
               'Scan to Verify', fill='#888',
               anchor='mm', font=font_tiny)
 
-    # ── Certificate ID + watermark ──
-    draw.text((W//2, H - 55),
+    # ── Certificate ID footer ──
+    draw.text((W//2, H - 50),
               f'Certificate ID: {cert_id}   |   '
               f'Verify at: qr-cert-system-qftr.onrender.com/verify',
               fill='#aaaaaa', anchor='mm', font=font_tiny)
 
-    # Diagonal watermark
+    # ── Watermark (very faint, behind content) ──
     watermark = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     wdraw     = ImageDraw.Draw(watermark)
     try:
-        wfont = ImageFont.load_default(size=80)
+        wfont = ImageFont.load_default(size=90)
     except TypeError:
         wfont = ImageFont.load_default()
-    wdraw.text((W//2, H//2), 'FEDERAL POLYTECHNIC OFFA',
-               fill=(26, 58, 107, 18), anchor='mm', font=wfont)
-    img = Image.alpha_composite(img.convert('RGBA'),
-                                watermark).convert('RGB')
+    wdraw.text((W//2, H//2 + 100),
+               'FEDERAL POLYTECHNIC OFFA',
+               fill=(26, 58, 107, 15),
+               anchor='mm', font=wfont)
+    img = Image.alpha_composite(
+        img.convert('RGBA'), watermark
+    ).convert('RGB')
 
     return img
 
@@ -276,11 +273,10 @@ def generate_keys_route():
 @app.route('/admin/settings', methods=['POST'])
 def save_settings_route():
     settings = load_settings()
-
     for field, key in [
-        ('logo',         'logo'),
-        ('rector_sig',   'rector_sig'),
-        ('registrar_sig','registrar_sig'),
+        ('logo',          'logo'),
+        ('rector_sig',    'rector_sig'),
+        ('registrar_sig', 'registrar_sig'),
     ]:
         file = request.files.get(field)
         if file and allowed_file(file.filename):
@@ -288,7 +284,6 @@ def save_settings_route():
             path     = os.path.join(UPLOAD_DIR, filename)
             file.save(path)
             settings[key] = path
-
     save_settings(settings)
     flash('Settings saved successfully.', 'success')
     return redirect(url_for('admin'))
@@ -329,20 +324,25 @@ def issue():
             f"/verify?cert_id={cert_id}"
         )
 
+        # Generate QR with higher resolution for easy scanning
+        qr_img = make_qr(qr_payload, box_size=12, border=4)
+
         record = {
-            'id':          cert_id,
-            'cert_data':   cert_data,
-            'payload':     payload,
-            'issued_at':   datetime.now().isoformat(),
-            'qr_file':     f'{cert_id}_qr.png',
-            'cert_file':   f'{cert_id}_cert.png',
-            'photo_file':  f'{cert_id}_photo.{photo.filename.rsplit(".",1)[1].lower()}' if photo and allowed_file(photo.filename) else None,
+            'id':         cert_id,
+            'cert_data':  cert_data,
+            'payload':    payload,
+            'issued_at':  datetime.now().isoformat(),
+            'qr_file':    f'{cert_id}_qr.png',
+            'cert_file':  f'{cert_id}_cert.png',
+            'photo_file': (
+                f'{cert_id}_photo.{photo.filename.rsplit(".",1)[1].lower()}'
+                if photo and allowed_file(photo.filename) else None
+            ),
         }
         db = load_db()
         db.append(record)
         save_db(db)
 
-        qr_img = make_qr(qr_payload, box_size=8, border=3)
         qr_img.save(os.path.join(QR_DIR, record['qr_file']))
 
         cert_img = build_certificate_image(
@@ -368,7 +368,7 @@ def verify():
     result    = None
     cert_data = None
 
-    # Handle QR scan redirect
+    # Handle QR scan redirect (GET with cert_id param)
     cert_id_param = request.args.get('cert_id', '').strip().upper()
     if cert_id_param:
         record = find_cert(cert_id_param)
@@ -447,6 +447,5 @@ def download_cert(cert_id):
     )
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

@@ -59,6 +59,46 @@
   <a href="{{ url_for('issue') }}" class="btn btn-gold">
     📜 Issue New Certificate
   </a>
+  
+</div>
+
+<!-- Institution Settings -->
+<div class="card">
+  <div class="card-title">⚙️ Institution Settings</div>
+  <p style="font-size:.85rem; color:var(--muted); margin-bottom:1rem;">
+    Upload your school logo and signature images. These will appear on every certificate.
+  </p>
+  <form method="POST" action="{{ url_for('save_settings_route') }}"
+        enctype="multipart/form-data">
+    <div class="grid-3">
+      <div class="form-group">
+        <label>🏫 School Logo</label>
+        {% if settings.get('logo') %}
+          <img src="{{ url_for('static', filename='uploads/logo.' + settings.logo.split('.')[-1]) }}"
+               style="width:80px; display:block; margin-bottom:.5rem;
+                      border:2px solid var(--gold); border-radius:6px;"/>
+        {% endif %}
+        <input type="file" name="logo" accept="image/*"/>
+      </div>
+      <div class="form-group">
+        <label>✍️ Rector Signature</label>
+        {% if settings.get('rector_sig') %}
+          <img src="{{ url_for('static', filename='uploads/rector_sig.' + settings.rector_sig.split('.')[-1]) }}"
+               style="height:50px; display:block; margin-bottom:.5rem;"/>
+        {% endif %}
+        <input type="file" name="rector_sig" accept="image/*"/>
+      </div>
+      <div class="form-group">
+        <label>✍️ Registrar Signature</label>
+        {% if settings.get('registrar_sig') %}
+          <img src="{{ url_for('static', filename='uploads/registrar_sig.' + settings.registrar_sig.split('.')[-1]) }}"
+               style="height:50px; display:block; margin-bottom:.5rem;"/>
+        {% endif %}
+        <input type="file" name="registrar_sig" accept="image/*"/>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">💾 Save Settings</button>
+  </form>
 </div>
 
 <!-- Certificates table -->

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Verify Certificate{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>🔍 Certificate Verification</h1>
+  <p>Enter a Certificate ID or paste the QR code payload to verify authenticity. No login required.</p>
+</div>
+
+<div class="grid-2">
+  <div>
+    <!-- Method 1: By ID -->
+    <div class="card">
+      <div class="card-title">Verify by Certificate ID</div>
+      <p style="font-size:.85rem; color:var(--muted); margin-bottom:1rem;">
+        Enter the unique Certificate ID printed on the certificate
+        (e.g. <code style="background:#f0f0f0; padding:2px 6px; border-radius:4px;">A1B2C3D4</code>).
+      </p>
+      <form method="POST">
+        <div class="form-group">
+          <label>Certificate ID</label>
+          <input type="text" name="cert_id"
+                 placeholder="e.g. A1B2C3D4"
+                 style="text-transform:uppercase; letter-spacing:.1em; font-weight:700;" />
+        </div>
+        <button type="submit" class="btn btn-gold">🔍 Verify Certificate</button>
+      </form>
+    </div>
+
+    <!-- Method 2: JSON payload -->
+    <div class="card">
+      <div class="card-title">Verify by QR Payload (JSON)</div>
+      <p style="font-size:.85rem; color:var(--muted); margin-bottom:1rem;">
+        Paste the raw JSON content decoded from the QR code.
+        This works offline as long as you have the public key.
+      </p>
+      <form method="POST">
+        <div class="form-group">
+          <label>QR Code JSON Payload</label>
+          <textarea name="payload" rows="6"
+                    placeholder='{"data":{...},"signature":"..."}'></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">🔐 Verify Signature</button>
+      </form>
+    </div>
+
+    <!-- How to use -->
+    <div class="card" style="background:#f8faff;">
+      <div class="card-title">How to Verify</div>
+      <ol style="padding-left:1.2rem; line-height:2.2; font-size:.86rem; color:#374151;">
+        <li>Scan the QR code on the certificate using any QR scanner app</li>
+        <li>Copy the decoded text (it will be a JSON string)</li>
+        <li>Paste it in the box above, or use the Certificate ID</li>
+        <li>The system verifies the RSA-2048 digital signature</li>
+        <li>A green result means the certificate is authentic</li>
+        <li>A red result means the certificate is forged or tampered</li>
+      </ol>
+    </div>
+  </div>
+
+  <div>
+    <!-- Result -->
+    {% if result %}
+      <div class="verify-result {{ 'valid' if result.valid else 'invalid' }}">
+        <span class="verify-icon">
+          {{ '✅' if result.valid else '❌' }}
+        </span>
+        <div class="verify-msg">
+          {{ 'CERTIFICATE AUTHENTIC' if result.valid else 'CERTIFICATE INVALID' }}
+        </div>
+        <p style="margin-top:.6rem; font-size:.9rem;">{{ result.message }}</p>
+      </div>
+
+      {% if cert_data %}
+      <div class="card" style="margin-top:1.5rem;">
+        <div class="card-title">Certificate Details</div>
+        <table style="font-size:.9rem;">
+          <tbody>
+            {% for key, label in [
+              ('name',          'Full Name'),
+              ('matric',        'Matric Number'),
+              ('course',        'Programme'),
+              ('qualification', 'Qualification Awarded'),
+              ('grade',         'Classification'),
+              ('issue_date',    'Date Issued'),
+              ('institution',   'Institution'),
+              ('department',    'Department'),
+              ('cert_id',       'Certificate ID')
+            ] %}
+            {% if cert_data.get(key) %}
+            <tr>
+              <td style="padding:.55rem .4rem; font-weight:600;
+                         color:var(--navy); white-space:nowrap;
+                         font-size:.83rem;">{{ label }}</td>
+              <td style="padding:.55rem .4rem;">{{ cert_data[key] }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="card" style="text-align:center; padding:3rem 1.5rem;">
+        <div style="font-size:4rem; margin-bottom:1rem;">🔐</div>
+        <p style="color:var(--muted); font-size:.95rem;">
+          Enter a Certificate ID or QR payload on the left
+          to check its authenticity.
+        </p>
+        <p style="font-size:.82rem; color:#aaa; margin-top:.5rem;">
+          Verification uses the institution's RSA public key —
+          results are cryptographically guaranteed.
+        </p>
+      </div>
+
+      <div class="card" style="background:#fff8e1; border:1.5px solid var(--gold);">
+        <div class="card-title" style="color:#854d0e;">🛡️ Why Trust This System?</div>
+        <p style="font-size:.85rem; color:#78350f; line-height:1.9;">
+          The digital signature on every certificate can only be produced
+          by the institution's private key. Even a single character change
+          to the certificate data will cause verification to fail immediately.
+          The public key is openly available for anyone to use independently.
+        </p>
+        <a href="{{ url_for('public_key') }}"
+           class="btn btn-gold btn-sm" style="margin-top:.8rem;">
+          🔑 View Public Key
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% block title %}Certificate {{ record.id }}{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>📋 Certificate Details</h1>
+  <p>Certificate ID: <strong>{{ record.id }}</strong> &mdash; Issued {{ record.issued_at[:10] }}</p>
+</div>
+
+<div class="grid-2">
+  <div>
+    <!-- Cert data -->
+    <div class="card">
+      <div class="card-title">Certificate Information</div>
+      <table style="font-size:.9rem;">
+        <tbody>
+          {% for key, label in [
+            ('name',          'Full Name'),
+            ('matric',        'Matric Number'),
+            ('course',        'Programme'),
+            ('qualification', 'Qualification'),
+            ('grade',         'Classification'),
+            ('issue_date',    'Date Issued'),
+            ('institution',   'Institution'),
+            ('department',    'Department')
+          ] %}
+          <tr>
+            <td style="padding:.6rem .5rem; font-weight:600;
+                       color:var(--navy); white-space:nowrap;">{{ label }}</td>
+            <td style="padding:.6rem .5rem;">{{ record.cert_data[key] }}</td>
+          </tr>
+          {% endfor %}
+          <tr>
+            <td style="padding:.6rem .5rem; font-weight:600; color:var(--navy);">
+              Certificate ID
+            </td>
+            <td style="padding:.6rem .5rem;">
+              <span class="badge badge-navy">{{ record.id }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Actions -->
+    <div class="card">
+      <div class="card-title">Downloads & Actions</div>
+      <div class="btn-group">
+        <a href="{{ url_for('download_cert', cert_id=record.id) }}"
+           class="btn btn-primary">⬇ Download Certificate</a>
+        <a href="{{ url_for('download_qr', cert_id=record.id) }}"
+           class="btn btn-gold">⬇ Download QR Code</a>
+        <a href="{{ url_for('verify') }}"
+           class="btn btn-outline">🔍 Go to Verify</a>
+      </div>
+    </div>
+
+    <!-- Signature -->
+    <div class="card">
+      <div class="card-title">Digital Signature (RSA-2048 + SHA-256)</div>
+      <p style="font-size:.78rem; color:var(--muted); margin-bottom:.6rem;">
+        This is the cryptographic signature that proves this certificate
+        was issued by the institution.
+      </p>
+      <pre><code style="word-break:break-all;">{{ record.payload.signature }}</code></pre>
+    </div>
+  </div>
+
+  <div>
+    <!-- QR code -->
+    <div class="card" style="text-align:center;">
+      <div class="card-title">Generated QR Code</div>
+      <img src="{{ url_for('static', filename='qrcodes/' + record.qr_file) }}"
+           alt="Certificate QR Code"
+           style="max-width:260px; border:3px solid var(--gold);
+                  border-radius:8px; padding:8px;" />
+      <p style="font-size:.82rem; color:var(--muted); margin-top:.8rem;">
+        Scan this QR code to instantly verify this certificate's authenticity.
+      </p>
+    </div>
+
+    <!-- Certificate preview -->
+    <div class="card" style="padding:.8rem;">
+      <div class="card-title">Certificate Preview</div>
+      <div class="cert-preview">
+        <img src="{{ url_for('static', filename='certs/' + record.cert_file) }}"
+             alt="Certificate Image" />
+      </div>
+    </div>
+
+    <!-- Verify link -->
+    <div class="card" style="text-align:center; background:#f0f7ff;">
+      <p style="font-size:.88rem; color:var(--navy); margin-bottom:.8rem;">
+        Public verification link for this certificate:
+      </p>
+      <code style="font-size:.8rem; background:#e0ecff; padding:.4rem .8rem;
+                   border-radius:6px; display:block;">
+        /verify — use ID: {{ record.id }}
+      </code>
+      <a href="{{ url_for('verify') }}"
+         class="btn btn-outline btn-sm" style="margin-top:.8rem;">
+        Open Verification Page
+      </a>
+    </div>
+  </div>
+</div>
+
+<div style="margin-top:.5rem;">
+  <a href="{{ url_for('admin') }}" class="btn btn-outline">← Back to Admin</a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Public Key{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>🔑 Institution Public Key</h1>
+  <p>RSA-2048 public key for verifying certificates issued by Federal Polytechnic Offa.</p>
+</div>
+
+<div class="card">
+  <div class="card-title">RSA-2048 Public Key (PEM Format)</div>
+  {% if pem %}
+    <pre><code>{{ pem }}</code></pre>
+    <p style="font-size:.82rem; color:var(--muted); margin-top:1rem;">
+      This key is safe to share. It can only verify — not forge — certificates.
+    </p>
+  {% else %}
+    <div class="alert alert-warning">
+      ⚠️ No public key found. Please generate a key pair from the Admin panel first.
+    </div>
+    <a href="{{ url_for('admin') }}" class="btn btn-primary">Go to Admin →</a>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="card-title">Key Specifications</div>
+  <table style="font-size:.88rem;">
+    <tbody>
+      <tr>
+        <td style="padding:.5rem; font-weight:600; color:var(--navy); width:180px;">Algorithm</td>
+        <td>RSA</td>
+      </tr>
+      <tr>
+        <td style="padding:.5rem; font-weight:600; color:var(--navy);">Key Size</td>
+        <td>2048 bits</td>
+      </tr>
+      <tr>
+        <td style="padding:.5rem; font-weight:600; color:var(--navy);">Padding</td>
+        <td>PSS (Probabilistic Signature Scheme)</td>
+      </tr>
+      <tr>
+        <td style="padding:.5rem; font-weight:600; color:var(--navy);">Hash</td>
+        <td>SHA-256</td>
+      </tr>
+      <tr>
+        <td style="padding:.5rem; font-weight:600; color:var(--navy);">Format</td>
+        <td>PEM (Base64 DER)</td>
+      </tr>
+      <tr>
+        <td style="padding:.5rem; font-weight:600; color:var(--navy);">Issued By</td>
+        <td>Federal Polytechnic Offa</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="card" style="background:#fff8e1; border:1.5px solid var(--gold);">
+  <div class="card-title" style="color:#854d0e;">⚠️ Security Reminder</div>
+  <ul style="padding-left:1.2rem; font-size:.85rem; color:#78350f; line-height:2;">
+    <li>This public key can be freely shared with anyone.</li>
+    <li>Never share the <strong>private key</strong> — keep it secret always.</li>
+    <li>If keys are regenerated, old certificates cannot be re-verified.</li>
+    <li>Anyone can use this key to verify independently without logging in.</li>
+  </ul>
+</div>
+
+{% endblock %}

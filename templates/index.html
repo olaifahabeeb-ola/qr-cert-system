@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>🔐 QR Code Certificate System</h1>
+  <p>Cryptographically signed, publicly verifiable digital certificates — Federal Polytechnic Offa</p>
+</div>
+
+<div class="grid-3" style="margin-bottom:2rem;">
+  <div class="stat-card">
+    <span class="stat-num">{{ total }}</span>
+    <span class="stat-label">Certificates Issued</span>
+  </div>
+  <div class="stat-card gold">
+    <span class="stat-num">RSA</span>
+    <span class="stat-label">2048-bit Encryption</span>
+  </div>
+  <div class="stat-card green">
+    <span class="stat-num">{{ '✓ Ready' if keys_ready else '✗ No Keys' }}</span>
+    <span class="stat-label">Key Pair Status</span>
+  </div>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">How It Works</div>
+    <ol style="padding-left:1.2rem; line-height:2.2; color:#374151; font-size:.92rem;">
+      <li>Admin generates an RSA-2048 key pair (once)</li>
+      <li>Institution fills in student certificate details</li>
+      <li>System signs the data with the private key</li>
+      <li>A QR code embedding the signed payload is generated</li>
+      <li>Certificate image is produced with the QR code embedded</li>
+      <li>Anyone can scan the QR code to verify authenticity</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Quick Actions</div>
+    <div style="display:flex; flex-direction:column; gap:.8rem;">
+      <a href="{{ url_for('admin') }}"       class="btn btn-primary">🔧 Admin Portal</a>
+      <a href="{{ url_for('issue') }}"       class="btn btn-gold">📜 Issue New Certificate</a>
+      <a href="{{ url_for('verify') }}"      class="btn btn-outline">🔍 Verify a Certificate</a>
+      <a href="{{ url_for('public_key') }}"  class="btn btn-outline">🔑 View Public Key</a>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-title">Security Architecture</div>
+  <div class="grid-3">
+    <div style="text-align:center; padding:1rem;">
+      <div style="font-size:2.5rem; margin-bottom:.5rem;">🔏</div>
+      <strong style="color:var(--navy);">RSA-2048 Signing</strong>
+      <p style="font-size:.85rem; color:var(--muted); margin-top:.4rem;">
+        Certificate data is digitally signed using RSA with PSS padding
+        and SHA-256 hashing. Only the institution's private key can
+        create a valid signature.
+      </p>
+    </div>
+    <div style="text-align:center; padding:1rem;">
+      <div style="font-size:2.5rem; margin-bottom:.5rem;">📱</div>
+      <strong style="color:var(--navy);">QR Embedding</strong>
+      <p style="font-size:.85rem; color:var(--muted); margin-top:.4rem;">
+        The signed payload — certificate data plus signature — is encoded
+        into a QR code attached to every issued certificate.
+      </p>
+    </div>
+    <div style="text-align:center; padding:1rem;">
+      <div style="font-size:2.5rem; margin-bottom:.5rem;">✅</div>
+      <strong style="color:var(--navy);">Public Verification</strong>
+      <p style="font-size:.85rem; color:var(--muted); margin-top:.4rem;">
+        Anyone can verify a certificate by entering its ID or scanning
+        the QR code. No login required. Tampering is detected instantly.
+      </p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

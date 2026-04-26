@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}Issue Certificate{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>📜 Issue New Certificate</h1>
+  <p>Fill in the student's details below. The system will sign and generate the certificate automatically.</p>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <div class="card-title">Student & Certificate Details</div>
+    <form method="POST" action="{{ url_for('issue') }}">
+
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" name="name" required
+               placeholder="e.g. ADEBAYO SAMUEL OLUWAFEMI" />
+      </div>
+
+      <div class="form-group">
+        <label>Matric Number *</label>
+        <input type="text" name="matric" required
+               placeholder="e.g. FPO/HND/22/SWD/001" />
+      </div>
+
+      <div class="form-group">
+        <label>Programme / Course *</label>
+        <input type="text" name="course" required
+               placeholder="e.g. Software and Web Development" />
+      </div>
+
+      <div class="form-group">
+        <label>Qualification Awarded *</label>
+        <select name="qualification" required>
+          <option value="">-- Select Qualification --</option>
+          <option value="Higher National Diploma (HND)">Higher National Diploma (HND)</option>
+          <option value="National Diploma (ND)">National Diploma (ND)</option>
+          <option value="B.Sc. (Honours)">B.Sc. (Honours)</option>
+          <option value="Postgraduate Diploma">Postgraduate Diploma</option>
+          <option value="Certificate of Completion">Certificate of Completion</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Classification / Grade *</label>
+        <select name="grade" required>
+          <option value="">-- Select Grade --</option>
+          <option value="Distinction">Distinction</option>
+          <option value="Upper Credit">Upper Credit</option>
+          <option value="Lower Credit">Lower Credit</option>
+          <option value="Pass">Pass</option>
+          <option value="First Class Honours">First Class Honours</option>
+          <option value="Second Class Upper">Second Class Upper</option>
+          <option value="Second Class Lower">Second Class Lower</option>
+          <option value="Third Class">Third Class</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Date of Issue *</label>
+        <input type="date" name="issue_date" required />
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn btn-gold">
+          🔐 Sign & Issue Certificate
+        </button>
+        <a href="{{ url_for('admin') }}" class="btn btn-outline">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+
+  <div>
+    <div class="card">
+      <div class="card-title">What Happens When You Issue</div>
+      <ol style="padding-left:1.2rem; line-height:2.4; font-size:.88rem; color:#374151;">
+        <li>A unique Certificate ID is assigned</li>
+        <li>Certificate data is serialised to canonical JSON</li>
+        <li>RSA-2048 + SHA-256 digital signature is computed</li>
+        <li>Signed payload is encoded into a QR code image</li>
+        <li>A printable certificate image is generated</li>
+        <li>All data is stored securely in the system</li>
+      </ol>
+    </div>
+
+    <div class="card" style="background:#fff8e1; border:1.5px solid var(--gold);">
+      <div class="card-title" style="color:#854d0e;">⚠️ Important Notes</div>
+      <ul style="padding-left:1.2rem; font-size:.85rem; color:#78350f; line-height:2;">
+        <li>Ensure all details are correct before issuing — certificates cannot be edited after signing.</li>
+        <li>The private key must remain confidential at all times.</li>
+        <li>The public key is used for all verifications and can be shared freely.</li>
+        <li>If keys are regenerated, old certificates will fail verification.</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

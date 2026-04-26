@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}QR Certificate System{% endblock %} — Federal Polytechnic Offa</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #1a3a6b;
+      --gold:   #c8a415;
+      --light:  #f4f6fb;
+      --white:  #ffffff;
+      --text:   #2d2d2d;
+      --muted:  #6b7280;
+      --green:  #16a34a;
+      --red:    #dc2626;
+      --radius: 10px;
+      --shadow: 0 4px 24px rgba(26,58,107,0.10);
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--light);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      background: var(--navy);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      height: 60px;
+      box-shadow: 0 2px 12px rgba(0,0,0,.25);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+    .nav-brand {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .nav-brand span { color: white; font-weight: 400; }
+    nav a {
+      color: rgba(255,255,255,.82);
+      text-decoration: none;
+      font-size: .88rem;
+      padding: .3rem .6rem;
+      border-radius: 5px;
+      transition: background .2s, color .2s;
+    }
+    nav a:hover { background: rgba(200,164,21,.18); color: var(--gold); }
+    .nav-spacer { flex: 1; }
+    .nav-badge {
+      background: var(--gold);
+      color: var(--navy);
+      font-size: .72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+
+    /* LAYOUT */
+    .container { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+    .page-header {
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid var(--gold);
+    }
+    .page-header h1 { font-size: 1.6rem; color: var(--navy); }
+    .page-header p  { color: var(--muted); margin-top: .3rem; font-size: .92rem; }
+
+    /* CARDS */
+    .card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.8rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .card-title::before {
+      content: '';
+      display: inline-block;
+      width: 4px; height: 18px;
+      background: var(--gold);
+      border-radius: 2px;
+    }
+
+    /* GRID */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+    @media (max-width: 768px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* STAT CARDS */
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 1.5rem;
+      border-left: 5px solid var(--navy);
+    }
+    .stat-card.gold  { border-left-color: var(--gold); }
+    .stat-card.green { border-left-color: var(--green); }
+    .stat-num   { font-size: 2rem; font-weight: 800; color: var(--navy); display: block; }
+    .stat-label { font-size: .85rem; color: var(--muted); font-weight: 500; }
+
+    /* FORMS */
+    .form-group { margin-bottom: 1.2rem; }
+    label {
+      display: block;
+      font-size: .875rem;
+      font-weight: 600;
+      color: var(--navy);
+      margin-bottom: .4rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: .65rem .9rem;
+      border: 1.5px solid #d1d5db;
+      border-radius: 7px;
+      font-size: .92rem;
+      font-family: inherit;
+      transition: border-color .2s, box-shadow .2s;
+      background: white;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--navy);
+      box-shadow: 0 0 0 3px rgba(26,58,107,.12);
+    }
+    textarea { resize: vertical; min-height: 100px; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .6rem 1.3rem;
+      border: none;
+      border-radius: 7px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .btn-primary { background: var(--navy); color: white; }
+    .btn-primary:hover { background: #14305a; transform: translateY(-1px); }
+    .btn-gold    { background: var(--gold); color: var(--navy); }
+    .btn-gold:hover { background: #b8940f; transform: translateY(-1px); }
+    .btn-outline { background: transparent; border: 1.5px solid var(--navy); color: var(--navy); }
+    .btn-outline:hover { background: var(--navy); color: white; }
+    .btn-danger  { background: var(--red); color: white; }
+    .btn-sm      { padding: .35rem .8rem; font-size: .8rem; }
+    .btn-group   { display: flex; gap: .7rem; flex-wrap: wrap; }
+
+    /* ALERTS */
+    .alert {
+      padding: .85rem 1.1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: .9rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .alert-success { background: #dcfce7; color: #15803d; border-left: 4px solid var(--green); }
+    .alert-warning { background: #fef9c3; color: #854d0e; border-left: 4px solid #ca8a04; }
+    .alert-danger  { background: #fee2e2; color: var(--red); border-left: 4px solid var(--red); }
+    .alert-info    { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+
+    /* TABLE */
+    table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+    thead th {
+      background: var(--navy);
+      color: white;
+      padding: .75rem 1rem;
+      text-align: left;
+      font-size: .82rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    tbody tr { border-bottom: 1px solid #f0f0f0; }
+    tbody tr:hover { background: #f8faff; }
+    tbody td { padding: .75rem 1rem; vertical-align: middle; }
+
+    /* BADGE */
+    .badge {
+      display: inline-block;
+      padding: .2rem .65rem;
+      border-radius: 20px;
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-navy { background: #dbeafe; color: var(--navy); }
+
+    /* VERIFY RESULT */
+    .verify-result {
+      padding: 1.5rem;
+      border-radius: var(--radius);
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+    .verify-result.valid   { background: #dcfce7; border: 2px solid var(--green); }
+    .verify-result.invalid { background: #fee2e2; border: 2px solid var(--red); }
+    .verify-icon { font-size: 3rem; display: block; margin-bottom: .5rem; }
+    .verify-msg  { font-size: 1.05rem; font-weight: 700; }
+
+    /* CERT PREVIEW */
+    .cert-preview { border: 2px solid var(--gold); border-radius: var(--radius); overflow: hidden; }
+    .cert-preview img { width: 100%; display: block; }
+
+    /* CODE */
+    pre {
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 1.2rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: .82rem;
+      line-height: 1.6;
+    }
+
+    /* FOOTER */
+    footer {
+      background: var(--navy);
+      color: rgba(255,255,255,.6);
+      text-align: center;
+      padding: 1.2rem;
+      font-size: .82rem;
+      margin-top: 3rem;
+    }
+    footer span { color: var(--gold); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="{{ url_for('index') }}" class="nav-brand">QR<span>Cert</span></a>
+  <a href="{{ url_for('index') }}">Home</a>
+  <a href="{{ url_for('admin') }}">Admin</a>
+  <a href="{{ url_for('issue') }}">Issue Certificate</a>
+  <a href="{{ url_for('verify') }}">Verify</a>
+  <a href="{{ url_for('public_key') }}">Public Key</a>
+  <div class="nav-spacer"></div>
+  <span class="nav-badge">Fed Poly Offa</span>
+</nav>
+
+<div class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="alert alert-{{ cat if cat != 'message' else 'info' }}">
+          {% if cat == 'success' %}✅
+          {% elif cat == 'danger' %}❌
+          {% elif cat == 'warning' %}⚠️
+          {% else %}ℹ️{% endif %}
+          {{ msg }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</div>
+
+<footer>
+  <p>Cryptographically Encrypted QR Code Certificate System &mdash;
+     <span>Federal Polytechnic Offa, Kwara State</span> &mdash;
+     Dept. of Software &amp; Web Development &copy; 2026
+  </p>
+</footer>
+
+</body>
+</html>

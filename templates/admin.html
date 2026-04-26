@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <h1>🔧 Admin Dashboard</h1>
+  <p>Manage key pairs, issue certificates, and view all issued credentials.</p>
+</div>
+
+<!-- Key Status -->
+<div class="card">
+  <div class="card-title">RSA Key Pair Status</div>
+  {% if keys_ready %}
+    <div class="alert alert-success">
+      ✅ RSA-2048 key pair is generated and ready. Certificates can be issued.
+    </div>
+    <div class="btn-group">
+      <a href="{{ url_for('public_key') }}" class="btn btn-outline btn-sm">
+        🔑 View Public Key
+      </a>
+      <form method="POST" action="{{ url_for('generate_keys_route') }}"
+            style="display:inline;"
+            onsubmit="return confirm('Regenerate keys? All existing certificates will fail verification!')">
+        <button class="btn btn-danger btn-sm" type="submit">
+          ⚠️ Regenerate Keys
+        </button>
+      </form>
+    </div>
+  {% else %}
+    <div class="alert alert-warning">
+      ⚠️ No key pair found. Generate keys before issuing any certificates.
+    </div>
+    <form method="POST" action="{{ url_for('generate_keys_route') }}">
+      <button class="btn btn-primary" type="submit">
+        🔐 Generate RSA-2048 Key Pair
+      </button>
+    </form>
+  {% endif %}
+</div>
+
+<!-- Stats -->
+<div class="grid-3" style="margin-bottom:1.5rem;">
+  <div class="stat-card">
+    <span class="stat-num">{{ certs|length }}</span>
+    <span class="stat-label">Total Certificates Issued</span>
+  </div>
+  <div class="stat-card gold">
+    <span class="stat-num">RSA-2048</span>
+    <span class="stat-label">Encryption Algorithm</span>
+  </div>
+  <div class="stat-card green">
+    <span class="stat-num">SHA-256</span>
+    <span class="stat-label">Hash Algorithm</span>
+  </div>
+</div>
+
+<!-- Issue button -->
+<div style="margin-bottom:1.5rem;">
+  <a href="{{ url_for('issue') }}" class="btn btn-gold">
+    📜 Issue New Certificate
+  </a>
+</div>
+
+<!-- Certificates table -->
+<div class="card" style="padding:0; overflow:hidden;">
+  <div style="padding:1.2rem 1.5rem; border-bottom:1px solid #f0f0f0;">
+    <div class="card-title" style="margin:0;">All Issued Certificates</div>
+  </div>
+
+  {% if certs %}
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Cert ID</th>
+          <th>Student Name</th>
+          <th>Matric No</th>
+          <th>Qualification</th>
+          <th>Grade</th>
+          <th>Issue Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in certs|reverse %}
+        <tr>
+          <td><span class="badge badge-navy">{{ c.id }}</span></td>
+          <td><strong>{{ c.cert_data.name }}</strong></td>
+          <td>{{ c.cert_data.matric }}</td>
+          <td>{{ c.cert_data.qualification }}</td>
+          <td>{{ c.cert_data.grade }}</td>
+          <td>{{ c.cert_data.issue_date }}</td>
+          <td>
+            <div class="btn-group">
+              <a href="{{ url_for('view_cert', cert_id=c.id) }}"
+                 class="btn btn-outline btn-sm">View</a>
+              <a href="{{ url_for('download_cert', cert_id=c.id) }}"
+                 class="btn btn-primary btn-sm">⬇ Cert</a>
+              <a href="{{ url_for('download_qr', cert_id=c.id) }}"
+                 class="btn btn-gold btn-sm">⬇ QR</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div style="padding:2.5rem; text-align:center; color:var(--muted);">
+      No certificates issued yet.
+      <a href="{{ url_for('issue') }}">Issue the first one →</a>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

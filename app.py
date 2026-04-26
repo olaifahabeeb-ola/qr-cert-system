@@ -168,12 +168,7 @@ def issue():
         payload  = sign_certificate(cert_data)
         qr_json  = json.dumps(payload, separators=(',', ':'))
 
-        if len(qr_json.encode('utf-8')) > 216:
-            qr_payload = json.dumps(
-                {'cert_id': cert_id, 'verify': 'scan'}, separators=(',', ':')
-            )
-        else:
-            qr_payload = qr_json
+        qr_payload = f"https://qr-cert-system-qftr.onrender.com/verify?cert_id={cert_id}"
 
         record = {
             'id':        cert_id,

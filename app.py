@@ -67,19 +67,18 @@ def build_certificate_image(cert_data, qr_img, cert_id,
                              student_photo_path=None):
     settings = load_settings()
 
-    # Canvas — A4 landscape at 150dpi
     W, H = 1684, 1191
     img  = Image.new('RGB', (W, H), '#FFFEF9')
     draw = ImageDraw.Draw(img)
 
-    # ── Outer borders ──
+    # ── Borders ──
     for i in range(8):
         draw.rectangle([i, i, W-1-i, H-1-i],
                        outline='#C8A415' if i % 2 == 0 else '#1a3a6b')
     draw.rectangle([18, 18, W-19, H-19], outline='#C8A415', width=3)
     draw.rectangle([24, 24, W-25, H-25], outline='#1a3a6b', width=1)
 
-    # ── Navy header bar ──
+    # ── Navy header ──
     draw.rectangle([0, 0, W, 180], fill='#1a3a6b')
     draw.rectangle([0, 177, W, 183], fill='#C8A415')
 
@@ -96,7 +95,7 @@ def build_certificate_image(cert_data, qr_img, cert_id,
         font_big = font_med = font_small = font_body = \
         font_name = font_cert = font_tiny = ImageFont.load_default()
 
-    # ── School logo (top left) ──
+    # ── School logo ──
     logo_path = settings.get('logo')
     if logo_path and os.path.exists(logo_path):
         try:
@@ -106,7 +105,7 @@ def build_certificate_image(cert_data, qr_img, cert_id,
         except Exception:
             pass
 
-    # ── Institution name ──
+    # ── Header text ──
     draw.text((W//2, 55),  'FEDERAL POLYTECHNIC OFFA',
               fill='white', anchor='mm', font=font_big)
     draw.text((W//2, 100), 'KWARA STATE, NIGERIA',
@@ -122,11 +121,10 @@ def build_certificate_image(cert_data, qr_img, cert_id,
     tw = 520
     draw.rectangle([W//2 - tw//2, 250, W//2 + tw//2, 254], fill='#C8A415')
 
-    # ── Body ──
+    # ── Body text ──
     draw.text((W//2, 300), 'This is to certify that',
               fill='#555555', anchor='mm', font=font_body)
 
-    # Student name
     draw.text((W//2, 370), cert_data.get('name', '').upper(),
               fill='#1a3a6b', anchor='mm', font=font_name)
     draw.rectangle([200, 400, W-200, 403], fill='#C8A415')
@@ -151,10 +149,9 @@ def build_certificate_image(cert_data, qr_img, cert_id,
               f"Date Issued:  {cert_data.get('issue_date', '')}",
               fill='#666666', anchor='mm', font=font_body)
 
-    # Gold divider
     draw.rectangle([60, 668, W-60, 671], fill='#C8A415')
 
-    # ── Student photo (top right) ──
+    # ── Student photo ──
     photo_x, photo_y = W - 230, 195
     draw.rectangle([photo_x - 6, photo_y - 6,
                     photo_x + 166, photo_y + 206],
@@ -179,7 +176,6 @@ def build_certificate_image(cert_data, qr_img, cert_id,
     sig_y    = 730
     sig_line = sig_y + 90
 
-    # Rector
     rector_sig = settings.get('rector_sig')
     if rector_sig and os.path.exists(rector_sig):
         try:
@@ -194,7 +190,6 @@ def build_certificate_image(cert_data, qr_img, cert_id,
     draw.text((230, sig_line + 45), 'Federal Polytechnic Offa',
               fill='#888', anchor='mm', font=font_tiny)
 
-    # Registrar
     reg_sig = settings.get('registrar_sig')
     if reg_sig and os.path.exists(reg_sig):
         try:
@@ -209,29 +204,36 @@ def build_certificate_image(cert_data, qr_img, cert_id,
     draw.text((690, sig_line + 45), 'Federal Polytechnic Offa',
               fill='#888', anchor='mm', font=font_tiny)
 
-    # ── QR code — larger for easy scanning ──
-    qr_size    = 300
+    # ── QR code — maximum quality with clean white border ──
+    qr_size    = 350
     qr_resized = qr_img.resize((qr_size, qr_size), Image.NEAREST)
     qr_x = W - qr_size - 80
     qr_y = sig_y - 20
-    draw.rectangle([qr_x - 10, qr_y - 10,
-                    qr_x + qr_size + 10, qr_y + qr_size + 10],
-                   outline='#C8A415', width=3)
-    draw.rectangle([qr_x - 8, qr_y - 8,
-                    qr_x + qr_size + 8, qr_y + qr_size + 8],
+
+    # White padding around QR so cameras can detect it easily
+    padding = 25
+    draw.rectangle([qr_x - padding, qr_y - padding,
+                    qr_x + qr_size + padding,
+                    qr_y + qr_size + padding],
                    fill='white')
+    draw.rectangle([qr_x - padding, qr_y - padding,
+                    qr_x + qr_size + padding,
+                    qr_y + qr_size + padding],
+                   outline='#C8A415', width=3)
+
     img.paste(qr_resized, (qr_x, qr_y))
-    draw.text((qr_x + qr_size//2, qr_y + qr_size + 22),
+
+    draw.text((qr_x + qr_size//2, qr_y + qr_size + padding + 18),
               'Scan to Verify', fill='#888',
               anchor='mm', font=font_tiny)
 
-    # ── Certificate ID footer ──
+    # ── Footer ──
     draw.text((W//2, H - 50),
               f'Certificate ID: {cert_id}   |   '
               f'Verify at: qr-cert-system-qftr.onrender.com/verify',
               fill='#aaaaaa', anchor='mm', font=font_tiny)
 
-    # ── Watermark (very faint, behind content) ──
+    # ── Watermark ──
     watermark = Image.new('RGBA', (W, H), (0, 0, 0, 0))
     wdraw     = ImageDraw.Draw(watermark)
     try:
@@ -309,7 +311,6 @@ def issue():
         cert_id              = str(uuid.uuid4())[:8].upper()
         cert_data['cert_id'] = cert_id
 
-        # Save student photo
         student_photo_path = None
         photo = request.files.get('student_photo')
         if photo and allowed_file(photo.filename):
@@ -324,8 +325,8 @@ def issue():
             f"/verify?cert_id={cert_id}"
         )
 
-        # Generate QR with higher resolution for easy scanning
-        qr_img = make_qr(qr_payload, box_size=12, border=4)
+        # Maximum quality QR for easy phone scanning
+        qr_img = make_qr(qr_payload, box_size=15, border=5)
 
         record = {
             'id':         cert_id,
@@ -368,7 +369,6 @@ def verify():
     result    = None
     cert_data = None
 
-    # Handle QR scan redirect (GET with cert_id param)
     cert_id_param = request.args.get('cert_id', '').strip().upper()
     if cert_id_param:
         record = find_cert(cert_id_param)
